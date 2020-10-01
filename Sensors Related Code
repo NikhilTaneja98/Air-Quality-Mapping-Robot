@@ -1,0 +1,76 @@
+  int gas_sensor = A0; //Sensor pin
+  float R0 = 76.63; //Define variable for R0
+
+void setup() {
+  Serial.begin(9600); //Baud rate 
+  pinMode(gas_sensor, INPUT); //Set gas sensor as input 
+
+}
+
+void loop() {  
+  
+  measureCO2();
+  measureCO();
+  measureSmoke();
+  delay(2500);
+
+}
+
+void measureCO2(){
+  float m,x,y;
+  float sensor_volt; //Define variable for sensor voltage 
+  float RS_gas; //Define variable for sensor resistance
+  float sensorValue; //Define variable for analog readings
+  float ratio;
+  x = 1.301;
+  y = 0.262;
+  m = -0.359;
+  sensorValue = analogRead(gas_sensor); //Read analog values of sensor  
+  sensor_volt = sensorValue*(5.0/1023.0); //Convert analog values to voltage
+  RS_gas = ((5.0)/sensor_volt-1)*1.5; //Get value of RS in a gas
+  ratio = RS_gas/R0;  // Get ratio RS_gas/RS_air 
+  double ppm_log = ((log10(ratio)-y)/m)+x; //Get ppm value in linear scale according to the the ratio value  
+  double ppm = pow(10, ppm_log); //Convert ppm value to log scale 
+  Serial.print("Carbon Dioxide : ");
+  Serial.print(ppm);
+  Serial.println("ppm");
+}
+
+void measureCO(){
+  float m,x,y;
+  float sensor_volt; //Define variable for sensor voltage 
+  float RS_gas; //Define variable for sensor resistance
+  float sensorValue; //Define variable for analog readings
+  float ratio;
+  x = 1.301;
+  y = 0.380;
+  m = -0.204;
+  sensorValue = analogRead(gas_sensor); //Read analog values of sensor  
+  sensor_volt = sensorValue*(5.0/1023.0); //Convert analog values to voltage
+  RS_gas = ((5.0)/sensor_volt-1)*10.0; //Get value of RS in a gas
+  ratio = RS_gas/R0;  // Get ratio RS_gas/RS_air  
+  double ppm_log = ((log10(ratio)-y)/m)+x; //Get ppm value in linear scale according to the the ratio value  
+  double ppm = pow(10, ppm_log); //Convert ppm value to log scale 
+  Serial.print("Carbon Monoxide : ");
+  Serial.print(ppm);
+  Serial.println("ppm");
+}
+
+void measureSmoke(){
+  float sensorValue= analogRead(gas_sensor);
+  Serial.print("Pin A0: ");
+  Serial.println(sensorValue);
+  // Checks if it has reached the threshold value
+  if (sensorValue < 50)
+  {
+    Serial.println("Low");
+  }
+  else if (sensorValue > 150)
+  {
+    Serial.println("High");
+  }
+  else
+  {
+    Serial.println("Moderate");
+  }
+}
